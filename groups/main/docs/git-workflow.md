@@ -1,87 +1,71 @@
 # NanoClaw Git Workflow
 
-## Repository Structure
+## Two-Repo Setup
 
-| Remote | URL | Purpose |
-|--------|-----|---------|
-| `origin` | `https://github.com/qwibitai/nanoclaw` | Upstream NanoClaw (read-only, pull only) |
-| `gforce` | `git@github.com:wientjes/gforce-nanoclaw.git` | Personal fork (config, customizations) |
+| Repo | Path | Remote | Purpose |
+|------|------|--------|---------|
+| NanoClaw | `~/nanoclaw` | `https://github.com/qwibitai/nanoclaw` | Upstream source — pull only, never commit |
+| Workspace | `~/gforce-nanoclaw-workspace` | `git@github.com:wientjes/gforce-nanoclaw-workspace.git` | Your files — memory, persona, bot code, scripts |
 
-**Branch:** `main` on both remotes.
-
-## How It Works
-
-Local `main` = upstream commits + your customization commits rebased on top.
-
-```
-origin/main:  A - B - C - D - E   (upstream)
-local/main:   A - B - C - D - E - [your commits]
-gforce/main:  A - B - C - D - E - [your commits]  (mirrors local)
-```
-
-When upstream gets new commits, rebase replays your customizations on top of them.
+NanoClaw is treated as a clean upstream dependency. All personal files live in the workspace repo and are backed up independently.
 
 ## Shortcuts
 
-Load these by sourcing `~/.bash_aliases` (done automatically in new shells).
+Defined in `~/.bash_aliases`, loaded automatically in new shells.
 
 | Command | What it does |
 |---------|--------------|
-| `nc-pull` | Pull upstream changes, rebase local commits on top |
-| `nc-push` | Force-push rebased history to personal fork |
-| `nc-sync` | Both of the above in sequence |
-| `nc-status` | Show what's ahead/behind on each remote |
+| `nc-update` | Pull latest NanoClaw from upstream |
+| `nc-status` | Show NanoClaw git status |
+| `ws-save "msg"` | Commit all workspace changes and push to GitHub |
+| `ws-status` | Show workspace git status |
+| `ws-pull` | Pull workspace from GitHub |
 
-## Standard Workflow
+## Standard Workflows
 
-### Pulling upstream updates
-
-```bash
-nc-sync
-```
-
-This runs `git pull --rebase origin main` then `git push --force gforce main`.
-
-The force push to `gforce` is always required after a rebase because rebasing rewrites commit hashes — this is expected and safe for a personal fork.
-
-### Committing local changes
+### Pull a NanoClaw update
 
 ```bash
-cd ~/nanoclaw
-git add <files>
-git commit -m "description"
-nc-push       # save to personal fork
+nc-update
 ```
 
-### Checking status
+### Save workspace changes (memory, persona, bot files, docs)
 
 ```bash
-nc-status
+ws-save "describe what changed"
 ```
 
-## What Lives Where
-
-**Commit to local + push to `gforce`:**
-- `groups/*/CLAUDE.md` — per-group memory and context
-- `groups/*/docs/` — documentation like this file
-- Custom scripts (e.g., auto-sync watcher, systemd services)
-- Any local integrations or channel additions
-
-**Never commit:**
-- `data/` — SQLite databases, runtime state
-- `.wwebjs_auth/` — WhatsApp session credentials
-- `.env` — API keys and secrets
-
-## Recovery
-
-If the rebase produces conflicts:
+### Check what's uncommitted in the workspace
 
 ```bash
-git -C ~/nanoclaw rebase --abort    # undo and get back to where you were
+ws-status
 ```
 
-Then resolve by rebasing interactively or merging instead:
+## What Lives in the Workspace Repo
+
+| File/Folder | What it is |
+|-------------|-----------|
+| `groups/main/CLAUDE.md` | Agent persona and instructions |
+| `groups/main/IDENTITY.md` / `MEMORY.md` / `SOUL.md` / `USER.md` | Agent memory files |
+| `groups/main/docs/` | Documentation (including this file) |
+| `groups/main/telegram-bot*.js` | Telegram bot source |
+| `groups/main/ecosystem.config.js` | PM2 config (API keys redacted — stored in `.telegram/.env`) |
+| `groups/main/package.json` | Telegram bot dependencies |
+| `groups/global/CLAUDE.md` | Global memory for all groups |
+| `scripts/watch-claude-md.sh` | File watcher for auto-committing CLAUDE.md |
+| `scripts/nanoclaw-claude-sync.service` | Systemd service for the watcher |
+| `.bash_aliases` | Shell shortcuts |
+| `install.sh` | Restore script for fresh setup |
+
+**Not tracked** (gitignored): `node_modules/`, `conversations/`, `logs/`, `.env`, API keys.
+
+## Fresh Setup / Restore
 
 ```bash
-git -C ~/nanoclaw pull --no-rebase origin main   # merge instead of rebase
+git clone https://github.com/qwibitai/nanoclaw ~/nanoclaw
+git clone git@github.com:wientjes/gforce-nanoclaw-workspace ~/gforce-nanoclaw-workspace
+cd ~/gforce-nanoclaw-workspace && ./install.sh
+cd ~/nanoclaw/groups/main && npm install
 ```
+
+Then re-authenticate WhatsApp and Telegram.

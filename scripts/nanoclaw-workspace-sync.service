@@ -1,0 +1,11 @@
+[Unit]
+Description=Auto-sync gforce-nanoclaw-workspace to GitHub
+After=network.target
+
+[Service]
+ExecStart=/home/greg_capmus_app/gforce-nanoclaw-workspace/scripts/watch-workspace.sh
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,17 @@
+{
+  "name": "group",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "node-telegram-bot-api": "^0.67.0",
+    "pm2": "^6.0.14"
+  }
+}

@@ -1,0 +1,11 @@
+[Unit]
+Description=Auto-sync groups/main/CLAUDE.md to gforce GitHub repo
+After=network.target
+
+[Service]
+ExecStart=/home/greg_capmus_app/nanoclaw/scripts/watch-claude-md.sh
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

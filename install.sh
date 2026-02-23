@@ -1,5 +1,5 @@
 #!/bin/bash
-# Restore workspace files into a fresh ~/nanoclaw install.
+# Restore workspace files into a fresh install.
 # Run after cloning both repos:
 #   git clone https://github.com/qwibitai/nanoclaw ~/nanoclaw
 #   git clone git@github.com:wientjes/gforce-nanoclaw-workspace ~/gforce-nanoclaw-workspace
@@ -9,6 +9,7 @@ set -e
 
 WORKSPACE="$(cd "$(dirname "$0")" && pwd)"
 NANOCLAW="$HOME/nanoclaw"
+SYSTEMD_DIR="$HOME/.config/systemd/user"
 
 if [ ! -d "$NANOCLAW" ]; then
   echo "Error: $NANOCLAW not found. Clone nanoclaw first."
@@ -35,17 +36,20 @@ cp "$WORKSPACE/groups/main/telegram-bot-instant.js"  "$NANOCLAW/groups/main/"
 cp "$WORKSPACE/groups/main/telegram-processor.js"    "$NANOCLAW/groups/main/"
 echo "    Run 'npm install' in $NANOCLAW/groups/main/ to restore node_modules."
 
-echo "==> Restoring scripts..."
-cp "$WORKSPACE/scripts/watch-claude-md.sh"           "$NANOCLAW/scripts/"
-cp "$WORKSPACE/scripts/nanoclaw-claude-sync.service" "$NANOCLAW/scripts/"
-chmod +x "$NANOCLAW/scripts/watch-claude-md.sh"
-
 echo "==> Restoring shell aliases..."
 cp "$WORKSPACE/.bash_aliases" "$HOME/.bash_aliases"
 echo "    Run: source ~/.bash_aliases"
+
+echo "==> Installing workspace auto-sync service..."
+mkdir -p "$SYSTEMD_DIR"
+cp "$WORKSPACE/scripts/nanoclaw-workspace-sync.service" "$SYSTEMD_DIR/"
+systemctl --user daemon-reload
+systemctl --user enable nanoclaw-workspace-sync
+systemctl --user start nanoclaw-workspace-sync
+echo "    nanoclaw-workspace-sync.service enabled and started."
 
 echo ""
 echo "Done. Don't forget to:"
 echo "  1. cd $NANOCLAW/groups/main && npm install"
 echo "  2. Re-authenticate WhatsApp and Telegram"
-echo "  3. Enable the systemd service (see scripts/nanoclaw-claude-sync.service)"
+echo "  3. Add API keys to $NANOCLAW/groups/main/.telegram/.env"

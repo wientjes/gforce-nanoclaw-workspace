@@ -22,10 +22,6 @@ cp "$WORKSPACE/groups/main/MEMORY.md"     "$NANOCLAW/groups/main/"
 cp "$WORKSPACE/groups/main/SOUL.md"       "$NANOCLAW/groups/main/"
 cp "$WORKSPACE/groups/main/USER.md"       "$NANOCLAW/groups/main/"
 
-echo "==> Restoring docs..."
-mkdir -p "$NANOCLAW/groups/main/docs"
-cp "$WORKSPACE/groups/main/docs/"* "$NANOCLAW/groups/main/docs/"
-
 echo "==> Restoring global memory..."
 cp "$WORKSPACE/groups/global/CLAUDE.md"   "$NANOCLAW/groups/global/"
 
